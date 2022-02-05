@@ -27,7 +27,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toast.makeText(this, "Привет!", Toast.LENGTH_SHORT).show();
 
+        /*4. тестирование адаптера для компонента RecyclerView
         recyclerViewPosters = findViewById(R.id.recyclerViewPosters);
         //расположение элементов сеткой в компоненте RecyclerView
         recyclerViewPosters.setLayoutManager(new GridLayoutManager(this, 2));
@@ -42,13 +44,13 @@ public class MainActivity extends AppCompatActivity {
         movieAdapter.setMovies(movies);
 
         //устанавливаем адаптер у RecyclerView
-        recyclerViewPosters.setAdapter(movieAdapter);
+        recyclerViewPosters.setAdapter(movieAdapter);*/
 
-        /*//тестирование работы метода buildURL() из класса NetworkUtils
+        /*//1. тестирование работы метода buildURL() из класса NetworkUtils
         String url = NetworkUtils.buildURL(NetworkUtils.POPULARITY, 1).toString();
         Log.i("MyResult", url);*/
 
-        /*//тестируем работу метода getJSONFromNetwork() из класса NetworkUtils
+        /*//2. тестируем работу метода getJSONFromNetwork() из класса NetworkUtils
         JSONObject jsonObject = NetworkUtils.getJSONFromNetwork(NetworkUtils.TOP_RATED, 3);
         if (jsonObject == null) {
             Toast.makeText(this, "Произошла ошибка!", Toast.LENGTH_SHORT).show();
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Успешно!", Toast.LENGTH_SHORT).show();
         }*/
 
-        /*//тестируем метод getMoviesFromJSON() из класса JSONUtils
+        /*//3. тестируем метод getMoviesFromJSON() из класса JSONUtils
         JSONObject jsonObject = NetworkUtils.getJSONFromNetwork(NetworkUtils.POPULARITY, 5);
         ArrayList<Movie> movies = JSONUtils.getMoviesFromJSON(jsonObject);
         StringBuilder builder = new StringBuilder();
