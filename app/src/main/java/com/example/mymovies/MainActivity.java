@@ -27,9 +27,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toast.makeText(this, "Привет!", Toast.LENGTH_SHORT).show();
 
-        /*4. тестирование адаптера для компонента RecyclerView
+        //тестирование адаптера для компонента RecyclerView
         recyclerViewPosters = findViewById(R.id.recyclerViewPosters);
         //расположение элементов сеткой в компоненте RecyclerView
         recyclerViewPosters.setLayoutManager(new GridLayoutManager(this, 2));
@@ -44,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         movieAdapter.setMovies(movies);
 
         //устанавливаем адаптер у RecyclerView
-        recyclerViewPosters.setAdapter(movieAdapter);*/
+        recyclerViewPosters.setAdapter(movieAdapter);
 
         /*//1. тестирование работы метода buildURL() из класса NetworkUtils
         String url = NetworkUtils.buildURL(NetworkUtils.POPULARITY, 1).toString();
