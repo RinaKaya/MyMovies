@@ -6,6 +6,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mymovies.data.Movie;
@@ -18,6 +22,11 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    //ссылка на свитч
+    private Switch switchSort;
+    private TextView textViewTopRated;
+    private TextView textViewPopularity;
+
     private RecyclerView recyclerViewPosters;
 
     //создаем адаптер
@@ -28,6 +37,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        switchSort = findViewById(R.id.switchSort);
+        textViewTopRated = findViewById(R.id.textViewTopRated);
+        textViewPopularity = findViewById(R.id.textViewPopularity);
+
         //тестирование адаптера для компонента RecyclerView
         recyclerViewPosters = findViewById(R.id.recyclerViewPosters);
         //расположение элементов сеткой в компоненте RecyclerView
@@ -35,15 +48,35 @@ public class MainActivity extends AppCompatActivity {
 
         movieAdapter = new MovieAdapter();
 
-        //получаем список фильмов
-        JSONObject jsonObject = NetworkUtils.getJSONFromNetwork(NetworkUtils.POPULARITY, 1);
-        ArrayList<Movie> movies = JSONUtils.getMoviesFromJSON(jsonObject);
-
-        //устанавливаем полученные фильмы у адаптера
-        movieAdapter.setMovies(movies);
-
         //устанавливаем адаптер у RecyclerView
         recyclerViewPosters.setAdapter(movieAdapter);
+
+        //чтобы фильмы сразу загрузились
+        switchSort.setChecked(true);
+
+        //добавляем слушатель для свитча
+        switchSort.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isCheked) {
+                setMethodOfSort(isCheked);
+            }
+        });
+        switchSort.setChecked(false);
+
+        //устанавливаем слушатель у адаптера
+        movieAdapter.setOnPosterClickListener(new MovieAdapter.OnPosterClickListener() {
+            @Override
+            public void onPosterClick(int position) {
+                Toast.makeText(MainActivity.this, "Clicked: " + position, Toast.LENGTH_SHORT).show();
+            }
+        });
+        //устанавливаем адаптер у слушателя
+        movieAdapter.setOnReachEndListener(new MovieAdapter.OnReachEndListener() {
+            @Override
+            public void OnReachEnd() {
+                Toast.makeText(MainActivity.this, "Конец списка", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         /*//1. тестирование работы метода buildURL() из класса NetworkUtils
         String url = NetworkUtils.buildURL(NetworkUtils.POPULARITY, 1).toString();
@@ -66,5 +99,42 @@ public class MainActivity extends AppCompatActivity {
         }
         Log.i("MyResult", builder.toString());*/
 
+    }
+
+    public void onClickSetPopularity(View view) {
+        setMethodOfSort(false);
+
+        //устанавливаем бегунок на свиче
+        switchSort.setChecked(false);
+    }
+
+    public void onClickSetTopRated(View view) {
+        setMethodOfSort(true);
+
+        //устанавливаем бегунок на свиче
+        switchSort.setChecked(true);
+    }
+
+    private void setMethodOfSort(boolean isTopRated) {
+        int methodOfSort;
+        if (isTopRated) {
+            //если свич включен, то рейтинговые фильмы
+            methodOfSort = NetworkUtils.TOP_RATED;
+            textViewTopRated.setTextColor(getResources().getColor(R.color.teal_200));
+            textViewPopularity.setTextColor(getResources().getColor(R.color.white));
+
+        } else {
+            //если свитч выкл., то популярные фильмы
+            methodOfSort = NetworkUtils.POPULARITY;
+            textViewPopularity.setTextColor(getResources().getColor(R.color.teal_200));
+            textViewTopRated.setTextColor(getResources().getColor(R.color.white));
+
+        }
+        //получаем список фильмов
+        JSONObject jsonObject = NetworkUtils.getJSONFromNetwork(methodOfSort, 1);
+        ArrayList<Movie> movies = JSONUtils.getMoviesFromJSON(jsonObject);
+
+        //устанавливаем полученные фильмы у адаптера
+        movieAdapter.setMovies(movies);
     }
 }

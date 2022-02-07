@@ -17,9 +17,31 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     private ArrayList<Movie> movies;
 
+    //создаем объект интерфейсного типа
+    private OnPosterClickListener onPosterClickListener;
+
+    private OnReachEndListener onReachEndListener;
+
     //пустой конструктор
     public MovieAdapter() {
         movies = new ArrayList<>();
+    }
+
+    interface OnPosterClickListener {
+        void onPosterClick(int position);
+    }
+
+    interface OnReachEndListener {
+        //этот метод вызывается при достижении конца списка эл-тов
+        void OnReachEnd();
+    }
+
+    public void setOnPosterClickListener(OnPosterClickListener onPosterClickListener) {
+        this.onPosterClickListener = onPosterClickListener;
+    }
+
+    public void setOnReachEndListener(OnReachEndListener onReachEndListener) {
+        this.onReachEndListener = onReachEndListener;
     }
 
     @NonNull
@@ -31,6 +53,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     @Override
     public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
+        //если мы достигли конца списка и наш слушатель не равен null,
+        if (position > movies.size() - 4 && onPosterClickListener != null) {
+            onReachEndListener.OnReachEnd();
+        }
+
         //в этом методе мы берем ImageView и устанавливаем у него изображение из фильма (из переменной posterPath)
         //т.к. в poster_path хранится не полный путь до картинки, то мы должны его составить
         //полный путь до картинки состоит из 3-х частей:
@@ -58,6 +85,15 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         public MovieViewHolder(@NonNull View itemView) {
             super(itemView);
             imageViewSmallPoster = itemView.findViewById(R.id.imageViewSmallPoster);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (onPosterClickListener != null) {
+                        //getAdapterPosition() - передаем позицию адаптера
+                        onPosterClickListener.onPosterClick(getAdapterPosition());
+                    }
+                }
+            });
         }
     }
 
