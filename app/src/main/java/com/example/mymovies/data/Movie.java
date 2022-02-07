@@ -1,10 +1,16 @@
 package com.example.mymovies.data;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 /** Класс, который описывает фильм. */
 
+@Entity(tableName = "movies")
 public class Movie {
 
     //т.к. в будущем объекты класса Movie (фильмы) будем хранить в БД, то создаем id
+    //отметили аннотацией, т.к. id будет первичным ключом
+    @PrimaryKey
     private int id;
 
     private int voteCount; //кол-во оценок у фильма

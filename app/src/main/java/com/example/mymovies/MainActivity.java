@@ -1,6 +1,9 @@
 package com.example.mymovies;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -12,6 +15,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mymovies.data.MainViewModal;
 import com.example.mymovies.data.Movie;
 import com.example.mymovies.utils.JSONUtils;
 import com.example.mymovies.utils.NetworkUtils;
@@ -19,8 +23,11 @@ import com.example.mymovies.utils.NetworkUtils;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    private MainViewModal viewModal;
 
     //ссылка на свитч
     private Switch switchSort;
@@ -36,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        viewModal = ViewModelProviders.of(this).get(MainViewModal.class);
 
         switchSort = findViewById(R.id.switchSort);
         textViewTopRated = findViewById(R.id.textViewTopRated);
@@ -75,6 +84,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void OnReachEnd() {
                 Toast.makeText(MainActivity.this, "Конец списка", Toast.LENGTH_SHORT).show();
+            }
+        });
+        LiveData<List<Movie>> moviesFromLiveData = viewModal.getMovies();
+
+        //добавляем наблюдателя
+        //каждый раз, когда данные в БД будут меняться, то мы их будем устанавливать у адаптера
+        moviesFromLiveData.observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(List<Movie> movies) {
+                movieAdapter.setMovies(movies);
             }
         });
 
@@ -130,11 +149,28 @@ public class MainActivity extends AppCompatActivity {
             textViewTopRated.setTextColor(getResources().getColor(R.color.white));
 
         }
+        downloadData(methodOfSort, 1);
+    }
+
+    //вынесли загрузку данных в отдельный метод
+    //будем загружать данные в зависимости от способа сортировки и какая страница
+    private void downloadData(int methodOfSort, int page) {
         //получаем список фильмов
         JSONObject jsonObject = NetworkUtils.getJSONFromNetwork(methodOfSort, 1);
         ArrayList<Movie> movies = JSONUtils.getMoviesFromJSON(jsonObject);
 
-        //устанавливаем полученные фильмы у адаптера
-        movieAdapter.setMovies(movies);
+        //если мы получили новые данные и они не пустые
+        if (movies != null && !movies.isEmpty()) {
+            //тогда мы очистим предыдущие данные
+            viewModal.deleteAllMovies();
+
+            //затем вставляем новые данные в цикле
+            for (Movie movie : movies) {
+                viewModal.insertMovie(movie);
+            }
+        }
+
+        /*//устанавливаем полученные фильмы у адаптера
+        movieAdapter.setMovies(movies);*/
     }
 }
