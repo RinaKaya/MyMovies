@@ -2,11 +2,15 @@ package com.example.mymovies;
 
 /** Активность детальной страницы фильма. */
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,6 +36,37 @@ public class DetailActivity extends AppCompatActivity {
     private Movie movie;
     private FavouriteMovie favouriteMovie;
     private MainViewModal viewModal;
+
+    //чтобы добавить меню - надо переопределить метод onCreateOptionsMenu()
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //1. надо получить инфлэйтор
+        MenuInflater inflater = getMenuInflater();
+        //передаем меню, которое мы создали
+        inflater.inflate(R.menu.main_menu, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+    //для того, чтобы добавить реакцию на нажатие пунктов меню, переопределяем метод onOptionsItemSelected()
+    //в параметры этот метод принимает пункт меню, на который нажали
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        //получаем id пункта меню, на который нажали
+        int id = item.getItemId();
+        //в зависимости от значения будем выполнять разные действия
+        switch (id) {
+            case R.id.itemMain:
+                Intent intentToMain = new Intent(this, MainActivity.class);
+                startActivity(intentToMain);
+                break;
+            case R.id.itemFavourite:
+                Intent intentToFavourite = new Intent(this, FavouriteActivity.class);
+                startActivity(intentToFavourite);
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
