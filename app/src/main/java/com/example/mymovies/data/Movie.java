@@ -1,6 +1,7 @@
 package com.example.mymovies.data;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 /** Класс, который описывает фильм. */
@@ -8,9 +9,10 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "movies")
 public class Movie {
 
-    //т.к. в будущем объекты класса Movie (фильмы) будем хранить в БД, то создаем id
-    //отметили аннотацией, т.к. id будет первичным ключом
-    @PrimaryKey
+    //первичный ключ, который будет генерироваться автоматически
+    @PrimaryKey(autoGenerate = true)
+    private int uniqueId;
+
     private int id;
 
     private int voteCount; //кол-во оценок у фильма
@@ -24,7 +26,8 @@ public class Movie {
     private String releaseDate; //дата релиза
 
     //конструктор для всех полей
-    public Movie(int id, int voteCount, String title, String originalTitle, String overview, String posterPath, String bigPosterPath, String backdropPath, double voteAverage, String releaseDate) {
+    public Movie(int uniqueId, int id, int voteCount, String title, String originalTitle, String overview, String posterPath, String bigPosterPath, String backdropPath, double voteAverage, String releaseDate) {
+        this.uniqueId = uniqueId;
         this.id = id;
         this.voteCount = voteCount;
         this.title = title;
@@ -35,6 +38,29 @@ public class Movie {
         this.backdropPath = backdropPath;
         this.voteAverage = voteAverage;
         this.releaseDate = releaseDate;
+    }
+
+    //этот конструктор нужен для того, чтобы мы сами могли создавать объекты Movie
+    @Ignore
+    public Movie(int id,int voteCount, String title, String originalTitle, String overview, String posterPath, String bigPosterPath, String backdropPath, double voteAverage, String releaseDate) {
+        this.id = id;
+        this.voteCount = voteCount;
+        this.title = title;
+        this.originalTitle = originalTitle;
+        this.overview = overview;
+        this.posterPath = posterPath;
+        this.bigPosterPath = bigPosterPath;
+        this.backdropPath = backdropPath;
+        this.voteAverage = voteAverage;
+        this.releaseDate = releaseDate;
+    }
+
+    public int getUniqueId() {
+        return uniqueId;
+    }
+
+    public void setUniqueId(int uniqueId) {
+        this.uniqueId = uniqueId;
     }
 
     //геттеры и сеттеры на каждое поле, чтобы этот класс можно было использовать в БД

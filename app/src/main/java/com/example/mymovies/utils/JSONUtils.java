@@ -1,6 +1,10 @@
 package com.example.mymovies.utils;
 
+import android.provider.MediaStore;
+
 import com.example.mymovies.data.Movie;
+import com.example.mymovies.data.Review;
+import com.example.mymovies.data.Trailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +19,16 @@ public class JSONUtils {
     //во-первых, надо получить массив JSON-объектов по ключу results
     private static final String KEY_RESULTS = "results";
 
+    //ключи для получения отзывов к фильму из JSON-объекта
+    private static final String KEY_AUTHOR = "author";
+    private static final String KEY_CONTENT = "content";
+
+    //ключи для получения трейлера к фильму из JSON-объекта
+    private static final String KEY_KEY_OF_VIDEO = "key";
+    private static final String KEY_NAME = "name";
+    private static final String BASE_YOUTUBE_URL = "https://www.youtube.com/watch?v=";
+
+    //ключи для получения информации о фильме
     private static final String KEY_VOTE_COUNT = "vote_count";
     private static final String KEY_ID = "id";
     private static final String KEY_TITLE = "title";
@@ -31,6 +45,59 @@ public class JSONUtils {
     //папки с нужными размером картинок (понадобится, чтобы составить полный путь до нужной картинки)
     public static final String SMALL_POSTER_SIZE = "w185";
     public static final String BIG_POSTER_SIZE = "w780";
+
+    //метод, который возвращает массив отзывов
+    public static ArrayList<Review> getReviewsFromJSON(JSONObject jsonObject) {
+        ArrayList<Review> result = new ArrayList<>();
+        if (jsonObject == null) {
+            return result;
+        }
+        try {
+            JSONArray jsonArray = jsonObject.getJSONArray(KEY_RESULTS);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObjectReview = jsonArray.getJSONObject(i);
+
+                //из jsonObjectReview получаем значения
+                String author = jsonObjectReview.getString(KEY_AUTHOR);
+                String content = jsonObjectReview.getString(KEY_CONTENT);
+
+                //объект-отзыв
+                Review review = new Review(author, content);
+
+                //добавляем отзыв в массив result
+                result.add(review);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return result; //возвращаем массив отзывов
+    }
+
+    //метод, который возвращает массив трейлеров к фильму
+    public static ArrayList<Trailer> getTrailersFromJSON(JSONObject jsonObject) {
+        ArrayList<Trailer> result = new ArrayList<>();
+        if (jsonObject == null) {
+            return result;
+        }
+        try {
+            JSONArray jsonArray = jsonObject.getJSONArray(KEY_RESULTS);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObjectTrailer = jsonArray.getJSONObject(i);
+
+                //из jsonObjectTrailer получаем значения
+                //Чтобы получить доступ к видео добавляем ссылку на ютуб BASE_YOUTUBE_URL,
+                //где в качестве параметра мы передадим данный ключ.
+                String key = BASE_YOUTUBE_URL + jsonObjectTrailer.getString(KEY_KEY_OF_VIDEO);
+                String name = jsonObjectTrailer.getString(KEY_NAME);
+
+                Trailer trailer = new Trailer(key, name);
+                result.add(trailer);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return result; //возвращаем массив отзывов
+    }
 
     //этот метод получает массив с фильмами
     public static ArrayList<Movie> getMoviesFromJSON(JSONObject jsonObject) {

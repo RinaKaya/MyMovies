@@ -1,4 +1,4 @@
-package com.example.mymovies;
+package com.example.mymovies.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mymovies.R;
 import com.example.mymovies.data.Movie;
 import com.squareup.picasso.Picasso;
 
@@ -28,13 +29,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         movies = new ArrayList<>();
     }
 
-    interface OnPosterClickListener {
+    public interface OnPosterClickListener {
         void onPosterClick(int position);
     }
 
-    interface OnReachEndListener {
+    public interface OnReachEndListener {
         //этот метод вызывается при достижении конца списка эл-тов
-        void OnReachEnd();
+        void onReachEnd();
     }
 
     public void setOnPosterClickListener(OnPosterClickListener onPosterClickListener) {
@@ -54,10 +55,15 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     @Override
     public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
-        //если мы достигли конца списка и наш слушатель не равен null,
-        if (position > movies.size() - 4 && onPosterClickListener != null) {
-            onReachEndListener.OnReachEnd();
+        //теперь метод onReachEnd() не будет вызываться, пока мы не получим первые 20 фильмов
+        //а чтобы метод не вызывался несколько раз, пока данные грузятся - добавим переменную isLoading
+        if (movies.size() >= 20 && position > movies.size() - 4 && onPosterClickListener != null) {
+            onReachEndListener.onReachEnd();
         }
+        /*//если мы достигли конца списка и наш слушатель не равен null,
+        if (position > movies.size() - 4 && onPosterClickListener != null) {
+            onReachEndListener.onReachEnd();
+        }*/
 
         //в этом методе мы берем ImageView и устанавливаем у него изображение из фильма (из переменной posterPath)
         //т.к. в poster_path хранится не полный путь до картинки, то мы должны его составить
@@ -96,6 +102,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                 }
             });
         }
+    }
+
+    public void clear() {
+        this.movies.clear();
+        notifyDataSetChanged();
     }
 
     //добавим сеттер и геттер, чтобы мы могли добавить новый массив

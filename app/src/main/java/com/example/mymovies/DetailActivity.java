@@ -5,21 +5,36 @@ package com.example.mymovies;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mymovies.adapters.ReviewAdapter;
+import com.example.mymovies.adapters.TrailerAdapter;
 import com.example.mymovies.data.FavouriteMovie;
 import com.example.mymovies.data.MainViewModal;
 import com.example.mymovies.data.Movie;
+import com.example.mymovies.data.Review;
+import com.example.mymovies.data.Trailer;
+import com.example.mymovies.utils.JSONUtils;
+import com.example.mymovies.utils.NetworkUtils;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -31,11 +46,20 @@ public class DetailActivity extends AppCompatActivity {
     private TextView textViewRating;
     private TextView textViewReleaseDate;
     private TextView textViewOverview;
+    private ScrollView scrollViewInfo;
+
+    //ссылки на RecyclerView и на адаптеры
+    private RecyclerView recyclerViewTrailers;
+    private RecyclerView recyclerViewReviews;
+    private ReviewAdapter reviewAdapter;
+    private TrailerAdapter trailerAdapter;
 
     private int id;
     private Movie movie;
     private FavouriteMovie favouriteMovie;
     private MainViewModal viewModal;
+
+    private static String lang;
 
     //чтобы добавить меню - надо переопределить метод onCreateOptionsMenu()
     @Override
@@ -73,6 +97,9 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
+        //получаем язык, который сейчас используется на устройстве
+        lang = Locale.getDefault().getLanguage();
+
         imageViewAddToFavourite = findViewById(R.id.imageViewAddToFavourite);
 
         imageViewBigPoster = findViewById(R.id.imageViewBigPoster);
@@ -81,6 +108,7 @@ public class DetailActivity extends AppCompatActivity {
         textViewRating = findViewById(R.id.textViewRating);
         textViewReleaseDate = findViewById(R.id.textViewReleaseDate);
         textViewOverview = findViewById(R.id.textViewOverview);
+        scrollViewInfo = findViewById(R.id.scrollViewInfo);
 
         //1. получаем id фильма
         //получаем интент
@@ -98,7 +126,7 @@ public class DetailActivity extends AppCompatActivity {
 
         //3. далее устанавливаем значение у всех элементов
         //для ImageView установим значение с помощью Picasso
-        Picasso.get().load(movie.getBigPosterPath()).into(imageViewBigPoster);
+        Picasso.get().load(movie.getBigPosterPath()).placeholder(R.drawable.no_photo).into(imageViewBigPoster);
         textViewTitle.setText(movie.getTitle());
         textViewOriginalTitle.setText(movie.getOriginalTitle());
         textViewOverview.setText(movie.getOverview());
@@ -106,6 +134,37 @@ public class DetailActivity extends AppCompatActivity {
         //преобразовываем рейтинг из типа Double в строку
         textViewRating.setText(Double.toString(movie.getVoteAverage()));
         setFavourite();
+
+        //ДЛЯ ОТЗЫВОВ И ТРЕЙЛЕРОВ
+        recyclerViewReviews = findViewById(R.id.recyclerViewReviews);
+        recyclerViewTrailers = findViewById(R.id.recyclerViewTrailers);
+        reviewAdapter = new ReviewAdapter();
+        trailerAdapter = new TrailerAdapter();
+        trailerAdapter.setOnTrailerClickListener(new TrailerAdapter.OnTrailerClickListener() {
+            @Override
+            public void onTrailerClick(String url) {
+                //Toast.makeText(DetailActivity.this, url, Toast.LENGTH_SHORT).show();
+                Intent intentToTrailer = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intentToTrailer);
+            }
+        });
+        recyclerViewReviews.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewTrailers.setLayoutManager(new LinearLayoutManager(this));
+        //устанавливаем адаптеры
+        recyclerViewReviews.setAdapter(reviewAdapter);
+        recyclerViewTrailers.setAdapter(trailerAdapter);
+        //получаем список отзывов и список трейлеров
+        JSONObject jsonObjectTrailers = NetworkUtils.getJSONForVideos(movie.getId(), lang);
+        JSONObject jsonObjectReviews = NetworkUtils.getJSONForReviews(movie.getId(), lang);
+        //из полученных json-объектов надо получить трейлеры и отзывы
+        ArrayList<Trailer> trailers = JSONUtils.getTrailersFromJSON(jsonObjectTrailers);
+        ArrayList<Review> reviews = JSONUtils.getReviewsFromJSON(jsonObjectReviews);
+        //полученные массивы устанавливаем у адаптеров
+        reviewAdapter.setReviews(reviews);
+        trailerAdapter.setTrailers(trailers);
+
+        //указываем позицию скролла
+        scrollViewInfo.smoothScrollTo(0, 0);
     }
 
     public void onClickChangeFavourite(View view) {
